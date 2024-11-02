@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /TestApp
+COPY TestApp.sln .
+COPY TestApp.csproj .
+RUN dotnet restore ./TestApp.csproj
+
+COPY . .
+WORKDIR /TestApp
+RUN dotnet publish ./TestApp.csproj.sln -c release
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /TestApp/bin/Release/net8.0
+COPY --from=build /TestApp/bin/Release/net8.0 ./
+
+
+#EXPOSE 8080
+#ENV ASPNETCORE_URLS=http://+:8080
+#ENV DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+
+ENTRYPOINT ["dotnet", "TestApp.dll"]
